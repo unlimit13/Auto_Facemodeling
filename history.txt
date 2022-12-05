@@ -1,0 +1,15 @@
+총 소요시간 : 40초 내외
+
+ISR & file export- 10s
+Image flatten & file export - 6s
+brightness standardization & file export - 3s
+blender modeling & file export - 20s 
+
+개발 내역
+ - Facebuilder add-on module source : UI상의 file explorer를 통한 이미지 선택이 아닌, 고정 Path로 부터 읽음
+ - Image super resolution
+ - Image flatten
+ - brightness standardization
+ - Auto facemodeling script
+ - Auto burshing script
+ - Background Auto-processing script

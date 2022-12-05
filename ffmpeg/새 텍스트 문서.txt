@@ -1,0 +1,3 @@
+ffmpeg -i KakaoTalk_20220808_161536756.jpg -vf eq=brightness=2 output.jpg
+
+ffplay -i XXX -vf histogram
