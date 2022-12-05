@@ -205,9 +205,49 @@ class FB_OT_MultipleFilebrowserExec(Operator):
         pass
 
     def execute(self, context):
-        op = get_operator(Config.fb_multiple_filebrowser_idname)
-        op('INVOKE_DEFAULT', headnum=self.headnum)
+        #op = get_operator(FBConfig.fb_multiple_filebrowser_idname) #where I've changed
+        #op('INVOKE_DEFAULT', headnum=self.headnum)
+        logger = logging.getLogger(__name__)
+        settings = get_fb_settings()
+        if not settings.is_proper_headnum(self.headnum):
+            logger.error("WRONG HEADNUM: {}/{}".format(
+                self.headnum, settings.get_last_headnum()))
+            return {'CANCELLED'}
 
+        if not settings.check_heads_and_cams():
+            settings.fix_heads()
+            return {'CANCELLED'}
+
+        FBLoader.load_model(self.headnum)
+
+        head = settings.get_head(self.headnum)
+        last_camnum = head.get_last_camnum()
+        
+        self.directory = 'D:\Temp\Blender'
+        self.files = '12'
+
+        for f in self.files:
+            try:
+                if f=='1':
+                    filepath = '/mnt/d/Temp/Blender/TOTAL/TOTAL_Left.jpg'
+                elif f=='2':
+                    filepath = '/mnt/d/Temp/Blender/TOTAL/TOTAL_Right.jpg'
+                logger.debug("IMAGE FILE: {}".format(filepath))
+                camera = FBLoader.add_new_camera_with_image(self.headnum,
+                                                            filepath)
+                read_exif_to_camera(
+                    self.headnum, head.get_last_camnum(), filepath)
+                camera.orientation = camera.exif.orientation
+
+            except RuntimeError as ex:
+                logger.error("FILE READ ERROR: {}".format(f.name))
+
+        for i, camera in enumerate(head.cameras):
+            if i > last_camnum:
+                auto_setup_camera_from_exif(camera)
+                FBLoader.center_geo_camera_projection(self.headnum, i)
+
+        FBLoader.save_fb_serial_and_image_pathes(self.headnum)
         return {'FINISHED'}
 
 
